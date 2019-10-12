@@ -24,7 +24,7 @@ def index():
 def nlp():
     review_num = request.args.get('review_num')
     # Default 10
-    if review_num == '':
+    if type(review_num) != str:
         review_num = 10
     else:
         review_num = int(review_num)
@@ -32,7 +32,7 @@ def nlp():
     only_review_text = []
     for review in reviews:
         only_review_text.append(review['review'])
-    return only_review_text
+    return {0: only_review_text}
 
 if __name__ == "__main__":
     # Setting debug to True enables debug output. This line should be
