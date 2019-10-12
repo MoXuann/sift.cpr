@@ -1,10 +1,13 @@
 from flask import Flask
 from flask import request, jsonify
+import pandas as pd
 import sys
 import shopee
 import lazada
 import amazon
 import youtube
+import util
+import random
 
 application = Flask(__name__)
 
@@ -59,35 +62,19 @@ def search():
         return {}
     if search_num is None:
         search_num = 10
+
+    top_review, top_con_review = get_top_reviews(keyword)
+
     shopee_results = shopee.get_search_results(keyword, search_num, review_num)
     for result in shopee_results:
         result["image"] = result["shopee"]["image"],
         result["description"] = result["shopee"]["description"],
-        result["top_review"] = 'Top review. Wow.',
+        result["top_review"] = top_review,
+        result["top_con_review"] = top_con_review,
         result["Error"] = None,
         result["amazon"] = amazon.get_product_info(keyword)
         result["lazada"] = lazada.get_product_info(keyword)
     return {0: shopee_results}
-
-def get_product(product_name, product_id, shop_id, review_num):
-    try:
-        if review_num is None:
-            review_num = 10
-        shopee_results = shopee.get_product_info(product_id, shop_id, review_num)
-        lazada_results = lazada.get_product_info(product_name)
-        amazon_results = amazon.get_product_info(product_name)
-        results = {
-            "image": shopee_results["image"],
-            "description": shopee_results["description"],
-            "top_review": 'Top review. Wow.',
-            "shopee": shopee_results, 
-            "lazada": lazada_results, 
-            "amazon": amazon_results,
-            "Error": None
-            }
-        return results
-    except Exception as e:
-        return {"Error": e}
 
 @application.route('/test_lazada_search', methods=['GET'])
 def test_lazada_search():
@@ -113,6 +100,40 @@ def youtube_search():
         max_result = int(max_result)
     
     return youtube.search_result(video_title, max_result)
+
+def get_product(product_name, product_id, shop_id, review_num):
+    try:
+        if review_num is None:
+            review_num = 10
+        shopee_results = shopee.get_product_info(product_id, shop_id, review_num)
+        lazada_results = lazada.get_product_info(product_name)
+        amazon_results = amazon.get_product_info(product_name)
+        results = {
+            "image": shopee_results["image"],
+            "description": shopee_results["description"],
+            "top_review": 'Top review. Wow.',
+            "shopee": shopee_results, 
+            "lazada": lazada_results, 
+            "amazon": amazon_results,
+            "Error": None
+            }
+        return results
+    except Exception as e:
+        return {"Error": e}
+
+def get_top_reviews(keyword):
+    top_review = 'Good!'
+    top_con_review = 'Average'
+    
+    if util.get_cached_item_name(keyword) == 'hp laptop':
+        pros, cons = util.get_testfreak_db_pros_cons('hp-stream-14-z0xx-series-notebook-pc')
+        top_review = pros[random.randrange(0, len(pros))]
+        top_con_review = cons[random.randrange(0, len(cons))]
+    elif util.get_cached_item_name(keyword) == 'iphone 11':
+        pros, cons = util.get_testfreak_db_pros_cons('apple-iphone-11')
+        top_review = pros[random.randrange(0, len(pros))]
+        top_con_review = cons[random.randrange(0, len(cons))]
+    return top_review, top_con_review
 
 if __name__ == "__main__":
     # Setting debug to True enables debug output. This line should be

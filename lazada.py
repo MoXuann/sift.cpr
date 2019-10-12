@@ -11,6 +11,7 @@ import random
 import os
 from proxy import proxy_list
 import db
+import util
 
 def get_search_results(search_term, count=0):
     link = r'https://www.lazada.sg/catalog/?q='+ search_term + r'&_keyori=ss&from=input&spm=a2o42.pdp.search.go'
@@ -54,8 +55,7 @@ def get_search_results(search_term, count=0):
             return {"Error": f"Captcha encountered. Unable to circumvent. {str(e)}"}
 
 def get_product_info(name):
-    normalized_name = name.lower().split(' |,|-|_')
-    if 'hp' in normalized_name or 'laptop' in normalized_name or 'notebook' in normalized_name:
+    if util.is_cached_item(name):
         return db.HP_Notebook['lazada']
     else:
         return []

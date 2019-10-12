@@ -10,6 +10,11 @@ import os
 from proxy import proxy_list
 import util
 
+######################################################################
+# If you need to scrape a product, just add its url to scrape_urls.txt
+# and then run this script
+######################################################################
+
 def update_testfreak_db(url):
     # cap = DesiredCapabilities().FIREFOX
     # cap["marionette"] = False
@@ -50,7 +55,8 @@ def update_testfreak_db(url):
     element3 = browser.find_elements_by_xpath("//p[@class='formatted']")
     # pros_element = browser.find_elements_by_class_name("pros")
     pros_element = browser.find_elements_by_xpath("//div[@class='content']//div[@class='pros']")
-    cons_element = browser.find_elements_by_class_name("cons")
+    cons_element = browser.find_elements_by_xpath("//div[@class='content']//div[@class='cons']")
+    # cons_element = browser.find_elements_by_class_name("cons")
 
     review_list = []
     for x in range(len(element3)):
@@ -69,18 +75,20 @@ def update_testfreak_db(url):
     ctranslatedr_list = []
     for x in range(len(pros_element)):
         ptextblobr = TextBlob(pros_element[x].text)
-        ctextblobr = TextBlob(cons_element[x].text)
         if (ptextblobr.detect_language() != 'en'):
             ptranslatedr = str(ptextblobr.translate(to='en'))  # powered by Google Translate
         else:
             ptranslatedr = str(ptextblobr)
+        # print(ptranslatedr)
+        ptranslatedr_list.append(ptranslatedr[5:])
+
+    for x in range(len(cons_element)):
+        ctextblobr = TextBlob(cons_element[x].text)
         if (ctextblobr.detect_language() != 'en'):
             ctranslatedr = str(ctextblobr.translate(to='en'))  # powered by Google Translate
         else:
             ctranslatedr = str(ctextblobr)
-        # print(ptranslatedr)
         # print(ctranslatedr)
-        ptranslatedr_list.append(ptranslatedr[5:])
         ctranslatedr_list.append(ctranslatedr[5:])
 
     browser.quit()
@@ -104,7 +112,7 @@ def update_testfreak_db(url):
     print(f'Scraped product from: {url}')
 
 urls = util.read_from_txt('scrape_urls.txt')
-testfreak_db_urls = util.read_urls_from_testfreak_db()
+testfreak_db_urls = util.read_testfreak_db_urls()
 for url in urls:
     if url not in testfreak_db_urls:
         update_testfreak_db(url)
