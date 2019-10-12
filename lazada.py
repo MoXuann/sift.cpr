@@ -8,7 +8,9 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 import random
+import os
 from proxy import proxy_list
+import db
 
 def get_search_results(search_term, count=0):
     link = r'https://www.lazada.sg/catalog/?q='+ search_term + r'&_keyori=ss&from=input&spm=a2o42.pdp.search.go'
@@ -19,9 +21,10 @@ def get_search_results(search_term, count=0):
         # prox.socks_proxy = "ip_addr:port"
         # prox.ssl_proxy = "ip_addr:port"
 
+        cwd = os.getcwd()
         options = Options()
         options.headless = True
-        driver = webdriver.Firefox(options=options, proxy=proxy, executable_path='./geckodriver')
+        driver = webdriver.Firefox(options=options, proxy=proxy, executable_path=f'{cwd}/geckodriver')
 
         driver.get(link)
         web_result = driver.execute_script('return pageData.mods.listItems')
@@ -51,3 +54,9 @@ def get_search_results(search_term, count=0):
         else:
             return {"Error": f"Captcha encountered. Unable to circumvent. {str(e)}"}
 
+def get_product_info(name):
+    normalized_name = name.lower().split(' |,|-|_')
+    if 'hp' in normalized_name or 'laptop' in normalized_name or 'notebook' in normalized_name:
+        return db.HP_Notebook['lazada']
+    else:
+        return []

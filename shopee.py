@@ -1,5 +1,6 @@
 import requests
 import random
+from copy import deepcopy
 from proxy import proxy_list
 
 _shopee_base_url = "https://shopee.sg"
@@ -9,8 +10,7 @@ _user_agent_header = {
 }
 proxy_dict = {"http": proxy_list[random.randrange(0, len(proxy_list))]}
 
-def get_product_info(item_id, shop_id):
-    '''Returns product name, itemId, shopId, imageLinks, models, minPrice, shippingFee, categories, description as dict'''
+def get_product_info(item_id, shop_id, review_num=10):
     try:
         product_json = _get_product(item_id, shop_id)
         if product_json == None:
@@ -21,7 +21,7 @@ def get_product_info(item_id, shop_id):
         # Only send back some essential information. Image strings are replaced with url strings to the image
         # Note that models may be [] (empty) and shipping fee is fetched from another get request.
         product = {
-            "origin": "Shopee",
+            "origin": "shopee",
             "image": _get_image_links(product_json['image'])[0],
             "name": product_json['name'],
             "price": _normalize_price(product_json['price_min']),
@@ -29,7 +29,7 @@ def get_product_info(item_id, shop_id):
             'product_url': product_link,
             "rating": product_json['item_rating']['rating_star'],
             "rating_num": sum(product_json['item_rating']['rating_count']),
-            "reviews": get_reviews(item_id, shop_id),
+            "reviews": get_reviews(item_id, shop_id, review_num),
             "Error": None
         }
         return product
@@ -52,8 +52,8 @@ def get_search_results(keyword, search_num=10) -> list:
             "brand": item['brand'],
             "image": _get_image_links(item['image'])[0],
             "name": item['name'],
-            "itemId": item['itemid'],
-            "shopId": item['shopid'],
+            "item_id": item['itemid'],
+            "shop_id": item['shopid'],
             "rating": item['item_rating']['rating_star']
         })
     return filtered
@@ -67,10 +67,12 @@ def get_reviews(item_id, shop_id, review_num=10) -> list:
     reviews = []
     for rating in ratings:
         reviews.append({
+            'origin': 'shopee',
             'author': rating['author_username'],
             'rating': rating['rating_star'],
             'review': rating['comment'], 
-            'review_likes': rating['like_count']
+            'review_likes': rating['like_count'],
+            'summary': 'Summary is very nice. Amazing!'
             })
     return reviews
 
@@ -85,7 +87,35 @@ def get_did_you_mean(keyword, keyword_num, offset) -> list:
             'image': _get_image_links(item['cover_img'])[0],
             'price': _normalize_price(item['average_price'])
             })
-    return catalogue_list
+    search_hints = get_search_hint(keyword)
+    for hint in search_hints:
+        catalogue_list.append({
+            'name': hint,
+            'image': '',
+            'price': ''
+        })
+    if len(catalogue_list) - 1 > int(keyword_num):
+        catalogue_list = catalogue_list[:int(keyword_num)]
+    item_list = []
+    for item in catalogue_list:
+        if item['name'].lower() != keyword.lower():
+            item_list.append(item)
+    return item_list
+
+def get_search_hint(keyword) -> list:
+    '''Gets related search hints according to keyword. For search bar.'''
+    get_url = _shopee_base_url + "/api/v2/search_hint/get?keyword=" + str(keyword) +"&search_type=0"
+    r = requests.get(get_url, headers=_user_agent_header, proxies=proxy_dict)
+    items = r.json()['keywords']
+
+    # Remove duplicate keyword names and category info. Some key suggestions have same names but different category
+    item_list = []
+    for item in items:
+        key = item['keyword']
+        if key not in item_list:
+            item_list.append(key)
+
+    return item_list
 
 def _get_product_link(name, item_id, shop_id) -> str:
     temp = name.replace(' ', '-')

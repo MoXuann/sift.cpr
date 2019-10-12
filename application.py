@@ -3,6 +3,7 @@ from flask import request, jsonify
 import sys
 import shopee
 import lazada
+import amazon
 import youtube
 
 application = Flask(__name__)
@@ -58,14 +59,43 @@ def search():
     if search_num is None:
         search_num = 10
     shopee_results = shopee.get_search_results(keyword, search_num)
-    return
+    return {0: shopee_results}
+
+@application.route('/get-product', methods=['GET'])
+def get_product():
+    try:
+        product_name = request.args.get('product_name')
+        product_id = request.args.get('product_id')
+        shop_id = request.args.get('shop_id')
+        review_num = request.args.get('review_num')
+        if review_num is None:
+            review_num = 10
+        shopee_results = shopee.get_product_info(product_id, shop_id, review_num)
+        lazada_results = lazada.get_product_info(product_name)
+        amazon_results = amazon.get_product_info(product_name)
+        results = {
+            "image": shopee_results["image"],
+            "description": shopee_results["description"],
+            "top_view": 'Top view. Wow.',
+            "shopee": shopee_results, 
+            "lazada": lazada_results, 
+            "amazon": amazon_results,
+            "Error": None
+            }
+        return results
+    except Exception as e:
+        return {"Error": e}
 
 @application.route('/test_lazada_search', methods=['GET'])
 def test_lazada_search():
     keyword = request.args.get('keyword')
+    search_num = request.args.get('search_num')
     if keyword is None:
         return {}
-    return lazada.get_search_results(keyword)
+    if search_num is None:
+        search_num = 10
+    results = lazada.get_search_results(keyword, int(search_num))
+    return {0: results}
 
 @application.route('/youtube_search',methods=['GET'])
 def youtube_search():
