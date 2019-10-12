@@ -32,7 +32,7 @@ def get_search_results(search_term, count=0):
             web_result = web_result[:10]
         for i,result in enumerate(web_result):
             search_data[i] = {
-                'brand_name': result['brandName'], 
+                'brand': result['brandName'], 
                 'image': result['image'],
                 'name': result['name'],
                 'price': result['priceShow'],
@@ -49,7 +49,7 @@ def get_search_results(search_term, count=0):
         if count < 10:
             get_search_results(search_term, count=count+1)
         else:
-            return {"Error": "Captcha encountered. Unable to circumvent."}
+            return {"Error": f"Captcha encountered. Unable to circumvent. {str(e)}"}
     except Exception as e:
         print("Error encountered.")
         print(e)

@@ -11,48 +11,52 @@ proxy_dict = {"http": proxy_list[random.randrange(0, len(proxy_list))]}
 
 def get_product_info(item_id, shop_id):
     '''Returns product name, itemId, shopId, imageLinks, models, minPrice, shippingFee, categories, description as dict'''
-    product_json = _get_product(item_id, shop_id)
-    if product_json == None:
-        return {}
+    try:
+        product_json = _get_product(item_id, shop_id)
+        if product_json == None:
+            return {}
 
-    # Only send back some essential information. Image strings are replaced with url strings to the image
-    # Note that models may be [] (empty) and shipping fee is fetched from another get request.
-    product = {
-        "image": product_json['image'],
-        "name": product_json['name'],
-        "price": _normalize_price(product_json['price_min']),
-        "description": product_json['description'],
-        'product_url': '',
-        "rating": product_json['item_rating']['rating_star'],
-        "rating_num": sum(product_json['item_rating']['rating_count']),
-        "reviews": get_reviews(item_id, shop_id),
-        "Error": None
-    }
-    return product
+        # Only send back some essential information. Image strings are replaced with url strings to the image
+        # Note that models may be [] (empty) and shipping fee is fetched from another get request.
+        product = {
+            "origin": "Shopee",
+            "image": _get_image_links(product_json['image'])[0],
+            "name": product_json['name'],
+            "price": _normalize_price(product_json['price_min']),
+            "description": product_json['description'],
+            'product_url': _get_product_link(product_json['name'], product_json['itemid'], product_json['shopid']),
+            "rating": product_json['item_rating']['rating_star'],
+            "rating_num": sum(product_json['item_rating']['rating_count']),
+            "reviews": get_reviews(item_id, shop_id),
+            "Error": None
+        }
+        return product
+    except Exception as e:
+        return{"Error": str(e)}
 
-def get_search_results(keyword):
+def get_search_results(keyword, search_num=10) -> list:
     '''Gets the results of search from keyword'''
     # &matchid= after limit is ommited to simplify search
-    get_url = _shopee_base_url + "/api/v2/search_items/?by=relevancy&keyword=" + str(keyword) \
-        + "&limit=10&newest=0&order=desc&page_type=search"
+    get_url = f"{_shopee_base_url}/api/v2/search_items/?by=relevancy&keyword={str(keyword)}&limit={str(search_num)}&newest=0&order=desc&page_type=search"
     r = requests.get(get_url, headers=_user_agent_header, proxies=proxy_dict)
     items = r.json()['items']
 
     if items == None or items == []:
-        return {"items": []}
+        return []
 
     filtered = []
     for item in items:
         filtered.append({
+            "brand": item['brand'],
+            "image": _get_image_links(item['image'])[0],
+            "name": item['name'],
             "itemId": item['itemid'],
             "shopId": item['shopid'],
-            "images": _get_image_links(item['images']),
-            "name": item['name'],
-            #"minPrice": self._normalize_price(item['price_min'])
+            "rating": item['item_rating']['rating_star']
         })
-    return {"items": filtered}
+    return filtered
 
-def get_reviews(item_id, shop_id, review_num=10):
+def get_reviews(item_id, shop_id, review_num=10) -> list:
     """ Returns [] if no rating
     """
     get_url = f"{_shopee_base_url}/api/v2/item/get_ratings?filter=0&flag=1&itemid={item_id}&limit={review_num}&offset=0&shopid={shop_id}"
@@ -68,14 +72,32 @@ def get_reviews(item_id, shop_id, review_num=10):
             })
     return reviews
 
-def _get_image_links(image_ids):
+def get_did_you_mean(keyword, keyword_num, offset):
+    get_url = f"{_shopee_base_url}/api/v2/product_catalogue/get?keyword={keyword}&limit={str(keyword_num)}&offset={str(offset)}&sort_type=0"
+    r = requests.get(get_url, headers=_user_agent_header, proxies=proxy_dict)
+    catalogue_dict = r.json()['data']['items']
+    catalogue_list = []
+    for item in catalogue_dict:
+        catalogue_list.append({
+            'name': item['spu_name'],
+            'image': _get_image_links(item['cover_img'])[0],
+            'price': _normalize_price(item['average_price'])
+            })
+    return catalogue_list
+
+def _get_product_link(name, item_id, shop_id) -> str:
+    temp = name.replace(' ', '-')
+    url = f'{_shopee_base_url}/{temp}-i.{item_id}.{shop_id}'
+    return url
+
+def _get_image_links(image_ids) -> list:
     '''Returns an array of image links from an array of image Ids'''
     result = []
     for image_id in image_ids:
         result.append(_shopee_image_url  + "/" + str(image_id))
     return result
 
-def _normalize_price(price):
+def _normalize_price(price) -> int:
     '''Normalizes prizes by dividing by 100000 or returning original price if price is invalid'''
     SHOPEE_PRICE_NORMALIZATION_CONSTANT = 100000
     try:
