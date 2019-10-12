@@ -54,20 +54,23 @@ def did_you_mean():
 def search():
     keyword = request.args.get('keyword')
     search_num = request.args.get('search_num')
+    review_num = request.args.get('review_num')
     if keyword is None:
         return {}
     if search_num is None:
         search_num = 10
-    shopee_results = shopee.get_search_results(keyword, search_num)
+    shopee_results = shopee.get_search_results(keyword, search_num, review_num)
+    for result in shopee_results:
+        result["image"] = result["shopee"]["image"],
+        result["description"] = result["shopee"]["description"],
+        result["top_review"] = 'Top review. Wow.',
+        result["Error"] = None,
+        result["amazon"] = amazon.get_product_info(keyword)
+        result["lazada"] = lazada.get_product_info(keyword)
     return {0: shopee_results}
 
-@application.route('/get-product', methods=['GET'])
-def get_product():
+def get_product(product_name, product_id, shop_id, review_num):
     try:
-        product_name = request.args.get('product_name')
-        product_id = request.args.get('product_id')
-        shop_id = request.args.get('shop_id')
-        review_num = request.args.get('review_num')
         if review_num is None:
             review_num = 10
         shopee_results = shopee.get_product_info(product_id, shop_id, review_num)
@@ -76,7 +79,7 @@ def get_product():
         results = {
             "image": shopee_results["image"],
             "description": shopee_results["description"],
-            "top_view": 'Top view. Wow.',
+            "top_review": 'Top review. Wow.',
             "shopee": shopee_results, 
             "lazada": lazada_results, 
             "amazon": amazon_results,

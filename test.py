@@ -14,4 +14,7 @@ import shopee
 #     only_review_text.append(review['review'])
 # print(only_review_text)
 
-print(lazada.get_product_info('hp'))
+# print(lazada.get_product_info('hp'))
+
+
+

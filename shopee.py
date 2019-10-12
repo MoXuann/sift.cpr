@@ -36,7 +36,7 @@ def get_product_info(item_id, shop_id, review_num=10):
     except Exception as e:
         return{"Error": str(e)}
 
-def get_search_results(keyword, search_num=10) -> list:
+def get_search_results(keyword, search_num=10, review_num=10) -> list:
     '''Gets the results of search from keyword'''
     # &matchid= after limit is ommited to simplify search
     get_url = f"{_shopee_base_url}/api/v2/search_items/?by=relevancy&keyword={str(keyword)}&limit={str(search_num)}&newest=0&order=desc&page_type=search"
@@ -47,15 +47,17 @@ def get_search_results(keyword, search_num=10) -> list:
         return []
 
     filtered = []
+    # for item in items:
+    #     filtered.append({
+    #         "brand": item['brand'],
+    #         "image": _get_image_links(item['image'])[0],
+    #         "name": item['name'],
+    #         "item_id": item['itemid'],
+    #         "shop_id": item['shopid'],
+    #         "rating": item['item_rating']['rating_star']
+    #     })
     for item in items:
-        filtered.append({
-            "brand": item['brand'],
-            "image": _get_image_links(item['image'])[0],
-            "name": item['name'],
-            "item_id": item['itemid'],
-            "shop_id": item['shopid'],
-            "rating": item['item_rating']['rating_star']
-        })
+        filtered.append({"shopee": get_product_info(item['itemid'], item['shopid'], review_num)})
     return filtered
 
 def get_reviews(item_id, shop_id, review_num=10) -> list:

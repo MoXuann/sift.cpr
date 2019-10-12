@@ -21,10 +21,9 @@ def get_search_results(search_term, count=0):
         # prox.socks_proxy = "ip_addr:port"
         # prox.ssl_proxy = "ip_addr:port"
 
-        cwd = os.getcwd()
         options = Options()
         options.headless = True
-        driver = webdriver.Firefox(options=options, proxy=proxy, executable_path=f'{cwd}/geckodriver')
+        driver = webdriver.Firefox(options=options, proxy=proxy, executable_path=f'./geckodriver')
 
         driver.get(link)
         web_result = driver.execute_script('return pageData.mods.listItems')
