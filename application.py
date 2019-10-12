@@ -53,8 +53,19 @@ def did_you_mean():
 def search():
     keyword = request.args.get('keyword')
     search_num = request.args.get('search_num')
+    if keyword is None:
+        return {}
+    if search_num is None:
+        search_num = 10
     shopee_results = shopee.get_search_results(keyword, search_num)
     return
+
+@application.route('/test_lazada_search', methods=['GET'])
+def test_lazada_search():
+    keyword = request.args.get('keyword')
+    if keyword is None:
+        return {}
+    return lazada.get_search_results(keyword)
 
 @application.route('/youtube_search',methods=['GET'])
 def youtube_search():

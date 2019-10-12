@@ -43,14 +43,11 @@ def get_search_results(search_term, count=0):
                 'Error': None
                 }
         return search_data
-    except ReferenceError as e:
+    except Exception as e:
         print("Captcha encountered")
         print(e)
         if count < 10:
             get_search_results(search_term, count=count+1)
         else:
             return {"Error": f"Captcha encountered. Unable to circumvent. {str(e)}"}
-    except Exception as e:
-        print("Error encountered.")
-        print(e)
-        return {"Error:": str(e)}
+
