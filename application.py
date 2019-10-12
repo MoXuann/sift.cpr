@@ -3,6 +3,7 @@ from flask import request, jsonify
 import sys
 import shopee
 import lazada
+import youtube
 
 application = Flask(__name__)
 
@@ -55,6 +56,19 @@ def search():
     shopee_results = shopee.get_search_results(keyword, search_num)
     return
 
+@application.route('/youtube_search',methods=['GET'])
+def youtube_search():
+    video_title = request.args.get('video_title')
+    max_result = request.args.get('max_result')
+    
+    if type(video_title) != str:
+        video_title = "meme_video"
+    if type(max_result) != str:
+        max_result = 5
+    else:
+        max_result = int(max_result)
+    
+    return youtube.search_result(video_title, max_result)
 
 if __name__ == "__main__":
     # Setting debug to True enables debug output. This line should be
