@@ -16,6 +16,8 @@ def get_product_info(item_id, shop_id):
         if product_json == None:
             return {}
 
+        product_link = _get_product_link(product_json['name'], product_json['itemid'], product_json['shopid'])
+
         # Only send back some essential information. Image strings are replaced with url strings to the image
         # Note that models may be [] (empty) and shipping fee is fetched from another get request.
         product = {
@@ -24,7 +26,7 @@ def get_product_info(item_id, shop_id):
             "name": product_json['name'],
             "price": _normalize_price(product_json['price_min']),
             "description": product_json['description'],
-            'product_url': _get_product_link(product_json['name'], product_json['itemid'], product_json['shopid']),
+            'product_url': product_link,
             "rating": product_json['item_rating']['rating_star'],
             "rating_num": sum(product_json['item_rating']['rating_count']),
             "reviews": get_reviews(item_id, shop_id),
@@ -72,7 +74,7 @@ def get_reviews(item_id, shop_id, review_num=10) -> list:
             })
     return reviews
 
-def get_did_you_mean(keyword, keyword_num, offset):
+def get_did_you_mean(keyword, keyword_num, offset) -> list:
     get_url = f"{_shopee_base_url}/api/v2/product_catalogue/get?keyword={keyword}&limit={str(keyword_num)}&offset={str(offset)}&sort_type=0"
     r = requests.get(get_url, headers=_user_agent_header, proxies=proxy_dict)
     catalogue_dict = r.json()['data']['items']
