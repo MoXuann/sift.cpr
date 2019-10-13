@@ -106,3 +106,4 @@ venv.bak/
 *.zip
 .vscode/settings.json
 en_core_web_sm-2.2.0/*
+shopee.py
