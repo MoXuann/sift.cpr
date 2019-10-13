@@ -30,6 +30,7 @@ def get_testfreak_db_pros_cons(product_name):
     for json in json_list:
         if json["product_name"] == product_name:
             return json["pros"], json["cons"]
+    return [], []
 
 def is_cached_item(item) -> bool:
     normalized_item = item.lower().split(' |,|-|_')
