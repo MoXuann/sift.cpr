@@ -55,6 +55,6 @@ def get_search_results(search_term, count=0):
 
 def get_product_info(name):
     if util.is_cached_item(name):
-        return db.HP_Notebook['lazada']
+        return db.HP_Notebook['Lazada']
     else:
-        return []
+        return {"reviews": []}

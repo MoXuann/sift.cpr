@@ -4,7 +4,6 @@ import json
 
 db_path = './product.json'
 
-
 def open_json(data_filename):
     with open(data_filename) as feedsjson:
         feeds = json.load(feedsjson)
@@ -31,6 +30,13 @@ def get_testfreak_db_pros_cons(product_name):
         if json["product_name"] == product_name:
             return json["pros"], json["cons"]
     return [], []
+
+def get_testfreak_db_reviews(product_name) -> list:
+    json_list = open_json(db_path)
+    for json in json_list:
+        if json["product_name"] == product_name:
+            return json["review"][0]
+    return []
 
 def is_cached_item(item) -> bool:
     normalized_item = item.lower().split(' |,|-|_')

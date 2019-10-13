@@ -65,7 +65,7 @@ def textrank(sentences, num_return = 5)
         return_list.append(ranked_sentences[i][1])
     return return_list
 
-def pros_cons (json_file_path):
+def pros_cons(json_file_path):
     with open("pros_cons.json", "r") as file:
         json_file = json.load(file)
 

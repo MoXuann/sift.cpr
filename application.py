@@ -66,13 +66,23 @@ def search():
 
     shopee_results = shopee.get_search_results(keyword, search_num, review_num)
     for result in shopee_results:
-        result["image"] = result["shopee"]["image"],
-        result["description"] = result["shopee"]["description"],
+        result["image"] = result["Shopee"]["image"],
+        result["description"] = result["Shopee"]["description"],
         result["top_review"] = top_review,
         result["top_con_review"] = top_con_review,
-        result["amazon"] = amazon.get_product_info(keyword)
-        result["lazada"] = lazada.get_product_info(keyword)
+        result["overall_summary"] = 'summary',
+        result["Amazon"] = amazon.get_product_info(keyword)
+        result["Lazada"] = lazada.get_product_info(keyword)
     return jsonify(shopee_results)
+
+@application.route('/reviews',methods=['GET'])
+def reviews():
+    a_review = util.get_testfreak_db_reviews("hp-stream-14-z0xx-series-notebook-pc")
+    b_review = util.get_testfreak_db_reviews("apple-iphone-11")
+    return {
+        "hp-stream-14-z0xx-series-notebook-pc": " ".join(a_review),
+        "apple-iphone-11": " ".join(b_review)
+    }
 
 @application.route('/pros_cons',methods=['GET'])
 def pros_cons():
@@ -126,9 +136,9 @@ def get_product(product_name, product_id, shop_id, review_num):
             "image": shopee_results["image"],
             "description": shopee_results["description"],
             "top_review": 'Top review. Wow.',
-            "shopee": shopee_results, 
-            "lazada": lazada_results, 
-            "amazon": amazon_results
+            "Shopee": shopee_results, 
+            "Lazada": lazada_results, 
+            "Amazon": amazon_results
             }
         return results
     except Exception as e:

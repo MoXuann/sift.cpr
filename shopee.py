@@ -21,7 +21,7 @@ def get_product_info(item_id, shop_id, review_num=10):
         # Only send back some essential information. Image strings are replaced with url strings to the image
         # Note that models may be [] (empty) and shipping fee is fetched from another get request.
         product = {
-            "origin": "shopee",
+            "origin": "Shopee",
             "image": _get_image_links(product_json['image'])[0],
             "name": product_json['name'],
             "price": _normalize_price(product_json['price_min']),
@@ -56,7 +56,7 @@ def get_search_results(keyword, search_num=10, review_num=10) -> list:
     #         "rating": item['item_rating']['rating_star']
     #     })
     for item in items:
-        filtered.append({"shopee": get_product_info(item['itemid'], item['shopid'], review_num)})
+        filtered.append({"Shopee": get_product_info(item['itemid'], item['shopid'], review_num)})
     return filtered
 
 def get_reviews(item_id, shop_id, review_num=10) -> list:
@@ -68,7 +68,7 @@ def get_reviews(item_id, shop_id, review_num=10) -> list:
     reviews = []
     for rating in ratings:
         reviews.append({
-            'origin': 'shopee',
+            'origin': 'Shopee',
             'author': rating['author_username'],
             'rating': rating['rating_star'],
             'review': rating['comment'], 
