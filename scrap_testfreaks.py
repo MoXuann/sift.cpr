@@ -125,8 +125,7 @@ def update_testfreak_db(url):
         with open(data_filename, mode='w') as f:
             json.dump(a, f)
     else:
-        with open(data_filename) as feedsjson:
-            feeds = json.load(feedsjson)
+        feeds = open_json(data_filename)
         feeds.append(entry)
         with open(data_filename, mode='w') as f:
             json.dump(feeds, f)
@@ -139,6 +138,13 @@ def update_testfreak_db(url):
     # else:
     #     df.to_csv(db_path, index=False)
     # print(f'Scraped product from: {url}')
+
+
+def open_json(data_filename):
+    with open(data_filename) as feedsjson:
+        feeds = json.load(feedsjson)
+    return feeds
+
 
 urls = util.read_from_txt('scrape_urls.txt')
 testfreak_db_urls = util.read_testfreak_db_urls()
