@@ -18,8 +18,12 @@ def read_from_txt(filename) -> list:
 
 def get_testfreak_db_pros_cons(product_name):
     df = pd.read_csv(db_path)
-    pros = literal_eval(df[df['product_name'] == product_name]['pros'][0])
-    cons = literal_eval(df[df['product_name'] == product_name]['cons'][0])
+    pros_str = df[df['product_name'] == product_name]['pros'].values
+    print('\n')
+    print(pros_str)
+    print('\n')
+    pros = literal_eval(pros_str)
+    cons = literal_eval(df[df['product_name'] == product_name]['cons'])
     return pros, cons
 
 def is_cached_item(item) -> bool:

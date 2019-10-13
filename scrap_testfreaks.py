@@ -73,6 +73,10 @@ def update_testfreak_db(url):
         # print(element3[x].text)
         # print("Translated text:========")
         # print(translatedr)
+        translatedr = translatedr.replace('\'', '\\\'')
+        translatedr = translatedr.replace('\"', '\\\"')
+        translatedr = translatedr.replace('[', ' ')
+        translatedr = translatedr.replace(']', ' ')
         review_list.append(translatedr)
 
     ptranslatedr_list = []
@@ -84,6 +88,10 @@ def update_testfreak_db(url):
         else:
             ptranslatedr = str(ptextblobr)
         # print(ptranslatedr)
+        ptranslatedr = ptranslatedr.replace('\'', '\\\'')
+        ptranslatedr = ptranslatedr.replace('\"', '\\\"')
+        ptranslatedr = ptranslatedr.replace('[', ' ')
+        ptranslatedr = ptranslatedr.replace(']', ' ')
         ptranslatedr_list.append(ptranslatedr[5:])
 
     for x in range(len(cons_element)):
@@ -93,6 +101,10 @@ def update_testfreak_db(url):
         else:
             ctranslatedr = str(ctextblobr)
         # print(ctranslatedr)
+        ctranslatedr = ctranslatedr.replace('\'', '\\\'')
+        ctranslatedr = ctranslatedr.replace('\"', '\\\"')
+        ctranslatedr = ctranslatedr.replace('[', ' ')
+        ctranslatedr = ctranslatedr.replace(']', ' ')
         ctranslatedr_list.append(ctranslatedr[5:])
 
     browser.quit()

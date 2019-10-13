@@ -74,7 +74,7 @@ def search():
         result["Error"] = None,
         result["amazon"] = amazon.get_product_info(keyword)
         result["lazada"] = lazada.get_product_info(keyword)
-    return {0: shopee_results}
+    return jsonify(shopee_results)
 
 @application.route('/test_lazada_search', methods=['GET'])
 def test_lazada_search():
