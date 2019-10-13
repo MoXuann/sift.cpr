@@ -1,6 +1,5 @@
 from flask import Flask
 from flask import request, jsonify
-import pandas as pd
 import sys
 import shopee
 import lazada
