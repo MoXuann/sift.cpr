@@ -46,7 +46,7 @@ def pros_clean_sentence (json_file):
             pros_list2.append(y)
     return pros_list2
 
-def textrank(sentences, num_return = 5)
+def textrank(sentences, num_return = 5):
     with tf.Session() as session:
         session.run([tf.global_variables_initializer(), tf.tables_initializer()])
         message_embeddings = session.run(embed(sentences))
@@ -65,9 +65,9 @@ def textrank(sentences, num_return = 5)
         return_list.append(ranked_sentences[i][1])
     return return_list
 
-def pros_cons (json_file_path, num_result):
-    with open("pros_cons.json", "r") as file:
-        json_file = json.load(file)
+def pros_cons (json_file, num_result):
+    # with open("pros_cons.json", "r") as file:
+    #     json_file = json.load(file)
 
     pros = pros_clean_sentence(json_file)
     cons = cons_clean_sentence(json_file)

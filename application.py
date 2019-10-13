@@ -7,6 +7,7 @@ import amazon
 import youtube
 import util
 import random
+import pros_cons
 
 application = Flask(__name__)
 
@@ -62,14 +63,14 @@ def search():
     if search_num is None:
         search_num = 10
 
-    top_review, top_con_review = get_top_reviews(keyword)
+    top_review_list, top_con_review_list = get_top_reviews(keyword)
 
     shopee_results = shopee.get_search_results(keyword, search_num, review_num)
-    for result in shopee_results:
+    for i,result in enumerate(shopee_results):
         result["image"] = result["Shopee"]["image"],
         result["description"] = result["Shopee"]["description"],
-        result["top_review"] = top_review,
-        result["top_con_review"] = top_con_review,
+        result["top_review"] = top_review_list[i],
+        result["top_con_review"] = top_con_review_list[i],
         result["overall_summary"] = 'summary',
         result["Amazon"] = amazon.get_product_info(keyword)
         result["Lazada"] = lazada.get_product_info(keyword)
@@ -150,12 +151,13 @@ def get_top_reviews(keyword):
     
     if util.get_cached_item_name(keyword) == 'hp laptop':
         pros, cons = util.get_testfreak_db_pros_cons('hp-stream-14-z0xx-series-notebook-pc')
-        top_review = pros[random.randrange(0, len(pros))]
-        top_con_review = cons[random.randrange(0, len(cons))]
     elif util.get_cached_item_name(keyword) == 'iphone 11':
         pros, cons = util.get_testfreak_db_pros_cons('apple-iphone-11')
-        top_review = pros[random.randrange(0, len(pros))]
-        top_con_review = cons[random.randrange(0, len(cons))]
+    else:
+        return top_review, top_con_review
+    pros_cons_list = pros_cons.pros_cons({"pros": pros, "cons": cons}, 10)
+    top_review = pros_cons_list["pros"]
+    top_con_review = pros_cons_list["cons"]
     return top_review, top_con_review
 
 if __name__ == "__main__":
