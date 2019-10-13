@@ -9,6 +9,7 @@ import random
 import os
 from proxy import proxy_list
 import util
+import json
 
 ######################################################################
 # If you need to scrape a product, just add its url to scrape_urls.txt
@@ -19,13 +20,16 @@ def update_testfreak_db(url):
     # cap = DesiredCapabilities().FIREFOX
     # cap["marionette"] = False
     geckodriver_path = './geckodriver'
-
+    data_filename = "product.json"
     proxy = Proxy()
     proxy.proxy_type = ProxyType.MANUAL
     proxy.http_proxy = proxy_list[random.randrange(0, len(proxy_list))]
 
     options = Options()
     options.headless = True
+
+    cap = DesiredCapabilities().FIREFOX
+    cap["marionette"] = False
 
     browser = webdriver.Firefox(options=options, proxy=proxy, executable_path=geckodriver_path)
 
@@ -106,22 +110,47 @@ def update_testfreak_db(url):
     browser.quit()
 
     name = url.split('/')[-2]
-    df = pd.DataFrame({
-        'product_name': name, 
-        'url': url,
-        'review': [review_list],
-        'pros': [ptranslatedr_list],
-        'cons': [ctranslatedr_list]
-    })
+    # df = pd.DataFrame({
+    #     'product_name': name,
+    #     'url': url,
+    #     'review': [review_list],
+    #     'pros': [ptranslatedr_list],
+    #     'cons': [ctranslatedr_list]
+    # })
 
-    db_path = "./testfreak_db.csv"
-    if os.path.isfile(db_path):
-        old_df = pd.read_csv(db_path)
-        old_df = old_df.append(df, ignore_index=True, sort=False)
-        old_df.to_csv(db_path, index=False)
+    # with open('product.json', 'w') as json_file:
+    #     product_dict['product'].append({'product_name': name,
+    #                                   'url': url,
+    #                                   'review': [review_list],
+    #                                   'pros': [ptranslatedr_list],
+    #                                   'cons': [ctranslatedr_list]})
+    #     json.dump(product_dict, json_file)
+    a = []
+    entry = {'product_name': name,
+             'url': url,
+             'review': [review_list],
+             'pros': [ptranslatedr_list],
+             'cons': [ctranslatedr_list]}
+
+    if not os.path.isfile(data_filename):
+        a.append(entry)
+        with open(data_filename, mode='w') as f:
+            json.dump(a, f)
     else:
-        df.to_csv(db_path, index=False)
-    print(f'Scraped product from: {url}')
+        with open(data_filename) as feedsjson:
+            feeds = json.load(feedsjson)
+        feeds.append(entry)
+        with open(data_filename, mode='w') as f:
+            json.dump(feeds, f)
+
+    # db_path = "./testfreak_db.csv"
+    # if os.path.isfile(db_path):
+    #     old_df = pd.read_csv(db_path)
+    #     old_df = old_df.append(df, ignore_index=True, sort=False)
+    #     old_df.to_csv(db_path, index=False)
+    # else:
+    #     df.to_csv(db_path, index=False)
+    # print(f'Scraped product from: {url}')
 
 urls = util.read_from_txt('scrape_urls.txt')
 testfreak_db_urls = util.read_testfreak_db_urls()
