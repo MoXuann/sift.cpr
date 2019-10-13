@@ -16,7 +16,7 @@ embed = hub.Module(module_url)
 
 def cons_clean_sentence (json_file):
     cons_list = []
-    for x in json_file['apple-iphone-11']['cons'][0]:
+    for x in json_file['cons'][0]:
         spec = x.split(",")
         cleaned = [x.strip() for x in spec]
         cons_list += cleaned
@@ -32,7 +32,7 @@ def cons_clean_sentence (json_file):
 
 def pros_clean_sentence (json_file):
     pros_list = []
-    for x in json_file['apple-iphone-11']['pros'][0]:
+    for x in json_file['pros'][0]:
         spec = x.split(",")
         cleaned = [x.strip() for x in spec]
         pros_list += cleaned
