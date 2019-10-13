@@ -29,8 +29,7 @@ def get_product_info(item_id, shop_id, review_num=10):
             'product_url': product_link,
             "rating": product_json['item_rating']['rating_star'],
             "rating_num": sum(product_json['item_rating']['rating_count']),
-            "reviews": get_reviews(item_id, shop_id, review_num),
-            "Error": None
+            "reviews": get_reviews(item_id, shop_id, review_num)
         }
         return product
     except Exception as e:

@@ -1,6 +1,5 @@
 from flask import Flask
 from flask import request, jsonify
-import pandas as pd
 import sys
 import shopee
 import lazada
@@ -71,10 +70,25 @@ def search():
         result["description"] = result["shopee"]["description"],
         result["top_review"] = top_review,
         result["top_con_review"] = top_con_review,
-        result["Error"] = None,
         result["amazon"] = amazon.get_product_info(keyword)
         result["lazada"] = lazada.get_product_info(keyword)
     return jsonify(shopee_results)
+
+@application.route('/pros_cons',methods=['GET'])
+def pros_cons():
+    a_pro, a_con = util.get_testfreak_db_pros_cons("hp-stream-14-z0xx-series-notebook-pc")
+    b_pro, b_con = util.get_testfreak_db_pros_cons("apple-iphone-11")
+    return {
+        "hp-stream-14-z0xx-series-notebook-pc": {
+            "pros": a_pro,
+            "cons": a_con
+        },
+        "apple-iphone-11": {
+            "pros": b_pro,
+            "cons": b_con
+        }
+    }
+
 
 @application.route('/test_lazada_search', methods=['GET'])
 def test_lazada_search():
@@ -114,8 +128,7 @@ def get_product(product_name, product_id, shop_id, review_num):
             "top_review": 'Top review. Wow.',
             "shopee": shopee_results, 
             "lazada": lazada_results, 
-            "amazon": amazon_results,
-            "Error": None
+            "amazon": amazon_results
             }
         return results
     except Exception as e:

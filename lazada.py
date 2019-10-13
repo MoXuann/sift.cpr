@@ -42,8 +42,7 @@ def get_search_results(search_term, count=0):
                 'description': '',
                 'product_url': result['productUrl'].strip("/"),
                 'rating': result['ratingScore'],
-                'rating_num': result['review'],
-                'Error': None
+                'rating_num': result['review']
                 }
         return search_data
     except Exception as e:

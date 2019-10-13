@@ -1,14 +1,23 @@
-import pandas as pd
 from ast import literal_eval
 import os
+import json
 
-db_path = './testfreak_db.csv'
+db_path = './product.json'
+
+
+def open_json(data_filename):
+    with open(data_filename) as feedsjson:
+        feeds = json.load(feedsjson)
+    return feeds
 
 def read_testfreak_db_urls() -> list:
     if not os.path.isfile(db_path):
         return []
-    df = pd.read_csv(db_path)
-    return df['url'].tolist()
+    json_list = open_json(db_path)
+    url_list = []
+    for i,json in enumerate(json_list):
+        url_list = json["url"]
+    return url_list
 
 def read_from_txt(filename) -> list:
     with open(filename) as f:
@@ -17,14 +26,11 @@ def read_from_txt(filename) -> list:
     return temp
 
 def get_testfreak_db_pros_cons(product_name):
-    df = pd.read_csv(db_path)
-    pros_str = df[df['product_name'] == product_name]['pros'].values
-    print('\n')
-    print(pros_str)
-    print('\n')
-    pros = literal_eval(pros_str)
-    cons = literal_eval(df[df['product_name'] == product_name]['cons'])
-    return pros, cons
+    json_list = open_json(db_path)
+    for json in json_list:
+        if json["product_name"] == product_name:
+            return json["pros"], json["cons"]
+    return [], []
 
 def is_cached_item(item) -> bool:
     normalized_item = item.lower().split(' |,|-|_')
