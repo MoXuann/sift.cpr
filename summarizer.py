@@ -27,9 +27,6 @@ Original file is located at
 # Overall I'm happy with this laptop, It is much lighter than my 15” Acer Predator and looks a lot more professional when traveling for work.
 # """
 
-review_str = """
-the hp stream 14 has a lightweight plastic chassis measuring 13.3 x 8.9 x 0.70 inches and weighing just 3.11 pounds
-the stream 14 keeps the price low by sticking to the bare essentials : a low - powered cpu , minimal ram and 32 gb of flash memory for storage"""
 import networkx as nx
 import re
 import spacy
@@ -58,104 +55,107 @@ def read_article(filedata):
     
     return sentences
 
-nlp = spacy.load('en_core_web_sm')
-doc = nlp(review_str)
-
-# for entity in doc.ents:
-#   print(entity.label_, ' | ', entity.text)
-#
-# filter_label = ["CARDINAL", "DATE"]
-ents = [(e.text, e.label_, e.kb_id_) for e in doc.ents]
-
 def keep_token(tok):
     return tok.pos_ not in {'PUNCT', 'NUM', 'SYM'}
 
 
-def keep_entity(tok):
-    tokens = []
-    for e in doc.ents:
-        if e[1] not in {'CARDINAL'}:
-            tokens.append(tok)
-    tokens.pop()
-    return tokens
-#
-# pos_drop_tokens = list(filter(keep_token, doc))
-# entity_keep_tokens = list(filter(keep_entity,pos_drop_tokens))
-#
 
-pos_drop_tokens = list()
-entity_keep_tokens = list()
-for p in read_article(review_str):
-    docp = nlp(p)
-    pos_drop_tokens.append(list(filter(keep_token, docp)))     
-for p in pos_drop_tokens:
-    list1 = [str(i) for i in p]
-    s = " ".join(list1)
-    docx = nlp(s)
-    entity_keep_tokens.append(list(filter(keep_entity, docx)))
+def summarise(review_str):
+    nlp = spacy.load('./en_core_web_sm-2.2.0')
+    doc = nlp(review_str)
 
-graphs = []
-nountokens = []
-adjtokens = []
-# https://spacy.io/docs/usage/processing-text
-for p in read_article(review_str):
-    document = nlp(p)
-    listofnountoken = []
-    listofadjtoken =[]
-    for token in document:
-        if (token.pos_ in {'NOUN'}):
-            # listofnountoken.append(token.text.lower() + "--" + str(token.i))
-            listofnountoken.append(token.text.lower())
-        if (token.pos_ in {'ADJ'}):
-            # listofadjtoken.append(token.text.lower() + "--" + str(token.i))
-            listofadjtoken.append(token.text.lower())
-    print("Noun Token: ",listofnountoken)
-    print("Adjective Token: ", listofadjtoken)
-    nountokens.append(listofnountoken)
-    adjtokens.append(listofadjtoken)
-    print('document: {0}'.format(document))
-    edges = []
-    for token in document:
-        # FYI https://spacy.io/docs/api/token
-        for child in token.children:
-            # edges.append(('{0}--{1}'.format(token.lower_,token.i),
-            #           '{0}--{1}'.format(child.lower_,child.i)))
-            edges.append(('{0}'.format(token.lower_),
-                          '{0}'.format(child.lower_)))
-    graphs.append(nx.Graph(edges))
+    def keep_entity(tok):
+        tokens = []
+        for e in doc.ents:
+            if e[1] not in {'CARDINAL'}:
+                tokens.append(tok)
+        tokens.pop()
+        return tokens
+    #
+    # pos_drop_tokens = list(filter(keep_token, doc))
+    # entity_keep_tokens = list(filter(keep_entity,pos_drop_tokens))
+    #
+    # for entity in doc.ents:
+    #   print(entity.label_, ' | ', entity.text)
+    #
+    # filter_label = ["CARDINAL", "DATE"]
+    ents = [(e.text, e.label_, e.kb_id_) for e in doc.ents]
 
 
-# list(graphs[3].nodes(data=True))
+    pos_drop_tokens = list()
+    entity_keep_tokens = list()
+    for p in read_article(review_str):
+        docp = nlp(p)
+        pos_drop_tokens.append(list(filter(keep_token, docp)))     
+    for p in pos_drop_tokens:
+        list1 = [str(i) for i in p]
+        s = " ".join(list1)
+        docx = nlp(s)
+        entity_keep_tokens.append(list(filter(keep_entity, docx)))
 
-shortestpaths = []
-for i in range(len(graphs)):
-    print("===============" + str(i) + "===============")
-    print("Noun tokens: ")
-    print(nountokens[i])
-    print("Adjective tokens: ")
-    print(adjtokens[i])
-    if (len(adjtokens[i]) != 0 and len(nountokens[i]) != 0):
-        try:
-            for j in itertools.product(adjtokens[i], nountokens[i]):
-                print(j)
-                print(nx.shortest_path(graphs[i], source=str(j[0]), target=str(j[1])))
-                shortestpaths.append(nx.shortest_path(graphs[i], source=str(j[0]), target=str(j[1])))
-        except nx.NetworkXNoPath:
-            print("Failed")
-    else:
-        print("Either adjective or noun token list is empty ")
+    graphs = []
+    nountokens = []
+    adjtokens = []
+    # https://spacy.io/docs/usage/processing-text
+    for p in read_article(review_str):
+        document = nlp(p)
+        listofnountoken = []
+        listofadjtoken =[]
+        for token in document:
+            if (token.pos_ in {'NOUN'}):
+                # listofnountoken.append(token.text.lower() + "--" + str(token.i))
+                listofnountoken.append(token.text.lower())
+            if (token.pos_ in {'ADJ'}):
+                # listofadjtoken.append(token.text.lower() + "--" + str(token.i))
+                listofadjtoken.append(token.text.lower())
+        print("Noun Token: ",listofnountoken)
+        print("Adjective Token: ", listofadjtoken)
+        nountokens.append(listofnountoken)
+        adjtokens.append(listofadjtoken)
+        print('document: {0}'.format(document))
+        edges = []
+        for token in document:
+            # FYI https://spacy.io/docs/api/token
+            for child in token.children:
+                # edges.append(('{0}--{1}'.format(token.lower_,token.i),
+                #           '{0}--{1}'.format(child.lower_,child.i)))
+                edges.append(('{0}'.format(token.lower_),
+                            '{0}'.format(child.lower_)))
+        graphs.append(nx.Graph(edges))
 
-shortestpathsset = set()
 
-for i in range(len(shortestpaths)):
-    filtered_sentence = []
-    ret_str = ''
-    for j in range(len(shortestpaths[i])):
-        if shortestpaths[i][j] in stopwords:
-            continue
+    # list(graphs[3].nodes(data=True))
+
+    shortestpaths = []
+    for i in range(len(graphs)):
+        print("===============" + str(i) + "===============")
+        print("Noun tokens: ")
+        print(nountokens[i])
+        print("Adjective tokens: ")
+        print(adjtokens[i])
+        if (len(adjtokens[i]) != 0 and len(nountokens[i]) != 0):
+            try:
+                for j in itertools.product(adjtokens[i], nountokens[i]):
+                    print(j)
+                    print(nx.shortest_path(graphs[i], source=str(j[0]), target=str(j[1])))
+                    shortestpaths.append(nx.shortest_path(graphs[i], source=str(j[0]), target=str(j[1])))
+            except nx.NetworkXNoPath:
+                print("Failed")
         else:
-            ret_str = ret_str + " " + shortestpaths[i][j]
-    shortestpathsset.add(ret_str)
+            print("Either adjective or noun token list is empty ")
 
-for item in shortestpathsset:
-    print(item)
+    shortestpathsset = set()
+
+    for i in range(len(shortestpaths)):
+        filtered_sentence = []
+        ret_str = ''
+        for j in range(len(shortestpaths[i])):
+            if shortestpaths[i][j] in stopwords:
+                continue
+            else:
+                ret_str = ret_str + " " + shortestpaths[i][j]
+        shortestpathsset.add(ret_str)
+
+    for item in shortestpathsset:
+        print(item)
+    return shortestpaths

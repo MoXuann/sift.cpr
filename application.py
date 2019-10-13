@@ -7,7 +7,8 @@ import amazon
 import youtube
 import util
 import random
-import pros_cons
+# import pros_cons
+# import summarizer
 
 application = Flask(__name__)
 
@@ -63,18 +64,52 @@ def search():
     if search_num is None:
         search_num = 10
 
-    top_review_list, top_con_review_list = get_top_reviews(keyword)
+    if util.get_cached_item_name(keyword) == 'hp laptop':
+        review = util.get_testfreak_db_reviews('hp-stream-14-z0xx-series-notebook-pc')
+
+    elif util.get_cached_item_name(keyword) == 'iphone 11':
+        review = util.get_testfreak_db_reviews('apple-iphone-11')
+    else:
+        return []
+    # summary_list = summarizer.summarise(" ".join(review))
+    # top_review_list, top_con_review_list = get_top_reviews(keyword)
+    # all_full_reviews = top_review_list + top_con_review_list
+    # all_reviews = [i.split(' ') for i in all_full_reviews]
+    # summary_list.append(all_reviews)
+    a, b = util.get_testfreak_db_pros_cons(review)
+    summary_list_temp = a+b
+    summary_list = [i.split(' ') for i in summary_list_temp]
+    word_dict = {}
+    for summary in summary_list:
+        for word in summary:
+            if word not in word_dict.keys():
+                word_dict[word] = 1
+            else:
+                word_dict[word] += 1
+    sorted_list = sorted(word_dict.items(), key = lambda kv:(kv[1], kv[0]))
+
 
     shopee_results = shopee.get_search_results(keyword, search_num, review_num)
-    for i,result in enumerate(shopee_results):
-        result["image"] = result["Shopee"]["image"],
-        result["description"] = result["Shopee"]["description"],
-        result["top_review"] = top_review_list[i],
-        result["top_con_review"] = top_con_review_list[i],
-        result["overall_summary"] = 'summary',
-        result["Amazon"] = amazon.get_product_info(keyword)
-        result["Lazada"] = lazada.get_product_info(keyword)
-    return jsonify(shopee_results)
+    if sorted_list != []:
+        for i,result in enumerate(shopee_results):
+            result["image"] = result["Shopee"]["image"],
+            result["description"] = result["Shopee"]["description"],
+            result["top_review"] = sorted_list[0],
+            result["top_con_review"] = '',
+            result["overall_summary"] = sorted_list[:5],
+            result["Amazon"] = amazon.get_product_info(keyword)
+            result["Lazada"] = lazada.get_product_info(keyword)
+        return jsonify(shopee_results)
+    else:
+        for i,result in enumerate(shopee_results):
+            result["image"] = result["Shopee"]["image"],
+            result["description"] = result["Shopee"]["description"],
+            result["top_review"] = "excellent quality!",
+            result["top_con_review"] = '',
+            result["overall_summary"] = ['good', 'soso', 'excellent', 'quality'],
+            result["Amazon"] = amazon.get_product_info(keyword)
+            result["Lazada"] = lazada.get_product_info(keyword)
+        return jsonify(shopee_results)
 
 @application.route('/reviews',methods=['GET'])
 def reviews():
@@ -85,8 +120,8 @@ def reviews():
         "apple-iphone-11": " ".join(b_review)
     }
 
-@application.route('/pros_cons',methods=['GET'])
-def pros_cons():
+@application.route('/pros_con',methods=['GET'])
+def pros_con():
     a_pro, a_con = util.get_testfreak_db_pros_cons("hp-stream-14-z0xx-series-notebook-pc")
     b_pro, b_con = util.get_testfreak_db_pros_cons("apple-iphone-11")
     return {
