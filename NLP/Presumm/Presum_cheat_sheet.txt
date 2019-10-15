@@ -1,0 +1,5 @@
+python train.py -task abs -mode test -test_from ../models/model_step_148000.pt -batch_size 3000 -test_batch_size 500 -bert_data_path ../bert_data/6 -log_file ../logs/val_abs_bet_cnndm -model_path ../models -sep_optim true -use_interval true -visible_gpus 2 -max_pos 512 -max_length 300 -alpha 0.7 -min_length 50 -result_path ../logs/abs_bert_cnndm -load_from_extractive ../models/bertext_cnndm_transformer.pt
+
+python train.py -task ext -mode train -bert_data_path ../bert_data/3 -ext_dropout 0.1 -model_path ../models -lr 2e-3 -visible_gpus 2 -report_every 50 -save_checkpoint_steps 1000 -batch_size 3000 -train_steps 50000 -accum_count 2 -log_file ../logs/ext_bert_cnndm -use_interval true -warmup_steps 10000 -max_pos 512
+
+python preprocess.py -mode format_to_bert -raw_path ../json_data -save_path ../bert_data  -lower -n_cpus 1 -log_file ../logs/preprocess.log
